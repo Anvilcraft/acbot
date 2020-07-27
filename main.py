@@ -82,7 +82,11 @@ async def mc(ctx, minecraftUsername : str):
         return
     db = pymysql.connect(sqlServer,sqlUser,sqlPassword,sqlDatabase )
     cursor = db.cursor()
-    cursor.execute("UPDATE users SET mcuuid=%s WHERE discord=%s", (respone["uuid"], ctx.author.id))
+    cursor.execute("SELECT * FROM users WHERE discord=%s", (ctx.author.id))
+    if(len(cursor.fetchall()) == 0):
+        cursor.execute("INSERT INTO users (discord, mcuuid) VALUES (%s, %s)", (member.id, respone["uuid"]))
+    else:
+        cursor.execute("UPDATE users SET mcuuid=%s WHERE discord=%s", (respone["uuid"], ctx.author.id))
     db.commit()
     db.close() 
     await ctx.send("successfully updated your minecraft username")
@@ -92,7 +96,11 @@ async def mc(ctx, minecraftUsername : str):
 async def yt(ctx, youTubeChannelURL):
     db = pymysql.connect(sqlServer,sqlUser,sqlPassword,sqlDatabase )
     cursor = db.cursor()
-    cursor.execute("UPDATE users SET ytchannel=%s WHERE discord=%s", (youTubeChannelURL, ctx.author.id))
+    cursor.execute("SELECT * FROM users WHERE discord=%s", (ctx.author.id))
+    if(len(cursor.fetchall()) == 0):
+        cursor.execute("INSERT INTO users (discord, ytchannel) VALUES (%s, %s)", (member.id, youTubeChannelURL))
+    else:
+        cursor.execute("UPDATE users SET ytchannel=%s WHERE discord=%s", (youTubeChannelURL, ctx.author.id))
     db.commit()
     db.close() 
     await ctx.send("successfully updated your YouTube channel URL")
@@ -102,7 +110,11 @@ async def yt(ctx, youTubeChannelURL):
 async def twitch(ctx, twitchChannelURL):
     db = pymysql.connect(sqlServer,sqlUser,sqlPassword,sqlDatabase )
     cursor = db.cursor()
-    cursor.execute("UPDATE users SET twchannel=%s WHERE discord=%s", (twitchChannelURL, ctx.author.id))
+    cursor.execute("SELECT * FROM users WHERE discord=%s", (ctx.author.id))
+    if(len(cursor.fetchall()) == 0):
+        cursor.execute("INSERT INTO users (discord, twchannel) VALUES (%s, %s)", (member.id, twitchChannelURL))
+    else:
+        cursor.execute("UPDATE users SET twchannel=%s WHERE discord=%s", (twitchChannelURL, ctx.author.id))
     db.commit()
     db.close() 
     await ctx.send("successfully updated your Twitch channel URL")
