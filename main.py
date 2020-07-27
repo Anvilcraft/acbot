@@ -84,7 +84,7 @@ async def mc(ctx, minecraftUsername : str):
     cursor = db.cursor()
     cursor.execute("SELECT * FROM users WHERE discord=%s", (ctx.author.id))
     if(len(cursor.fetchall()) == 0):
-        cursor.execute("INSERT INTO users (discord, mcuuid) VALUES (%s, %s)", (member.id, respone["uuid"]))
+        cursor.execute("INSERT INTO users (discord, mcuuid) VALUES (%s, %s)", (ctx.author, respone["uuid"]))
     else:
         cursor.execute("UPDATE users SET mcuuid=%s WHERE discord=%s", (respone["uuid"], ctx.author.id))
     db.commit()
@@ -98,7 +98,7 @@ async def yt(ctx, youTubeChannelURL):
     cursor = db.cursor()
     cursor.execute("SELECT * FROM users WHERE discord=%s", (ctx.author.id))
     if(len(cursor.fetchall()) == 0):
-        cursor.execute("INSERT INTO users (discord, ytchannel) VALUES (%s, %s)", (member.id, youTubeChannelURL))
+        cursor.execute("INSERT INTO users (discord, ytchannel) VALUES (%s, %s)", (ctx.author, youTubeChannelURL))
     else:
         cursor.execute("UPDATE users SET ytchannel=%s WHERE discord=%s", (youTubeChannelURL, ctx.author.id))
     db.commit()
@@ -112,7 +112,7 @@ async def twitch(ctx, twitchChannelURL):
     cursor = db.cursor()
     cursor.execute("SELECT * FROM users WHERE discord=%s", (ctx.author.id))
     if(len(cursor.fetchall()) == 0):
-        cursor.execute("INSERT INTO users (discord, twchannel) VALUES (%s, %s)", (member.id, twitchChannelURL))
+        cursor.execute("INSERT INTO users (discord, twchannel) VALUES (%s, %s)", (ctx.author, twitchChannelURL))
     else:
         cursor.execute("UPDATE users SET twchannel=%s WHERE discord=%s", (twitchChannelURL, ctx.author.id))
     db.commit()
