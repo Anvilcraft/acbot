@@ -73,6 +73,21 @@ async def on_member_remove(member):
     db.close()  
     print(member.name + " left the server")
 
+@bot.command(pass_context=True, brief="set your minecraft username")
+async def mc(ctx, minecraftUsername : str):
+    r = get("https://data.tilera.xyz/api/acapi/mcuuid.php?id=" + minecraftUsername)
+    respone = loads(r.text)
+    if(respone["status"] == "404"):
+        await ctx.send("Can't find your minecraft username, please check your spelling and try again.")
+        return
+    db = pymysql.connect(sqlServer,sqlUser,sqlPassword,sqlDatabase )
+    cursor = db.cursor()
+    cursor.execute("UPDATE users SET mcuuid=%s WHERE discord=%s", (respone["uuid"], ctx.author.id))
+    db.commit()
+    db.close() 
+    await ctx.send("successfully updated your minecraft username")
+    print(ctx.author.name + " updated his Minecraft username")    
+
 @bot.command(pass_context=True, brief="prints the ping time of the bot")
 async def ping(ctx):#prints the ping and the time the bot needed to process this command
     now = datetime.utcnow()#get the current time
