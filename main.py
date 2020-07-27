@@ -88,6 +88,26 @@ async def mc(ctx, minecraftUsername : str):
     await ctx.send("successfully updated your minecraft username")
     print(ctx.author.name + " updated his Minecraft username")    
 
+@bot.command(pass_context=True, brief="set your YouTube channel URL")
+async def yt(ctx, youTubeChannelURL):
+    db = pymysql.connect(sqlServer,sqlUser,sqlPassword,sqlDatabase )
+    cursor = db.cursor()
+    cursor.execute("UPDATE users SET ytchannel=%s WHERE discord=%s", (youTubeChannelURL, ctx.author.id))
+    db.commit()
+    db.close() 
+    await ctx.send("successfully updated your YouTube channel URL")
+    print(ctx.author.name + " updated his youtube channel URL")     
+
+@bot.command(pass_context=True, brief="set your Twitch channel URL")
+async def twitch(ctx, twitchChannelURL):
+    db = pymysql.connect(sqlServer,sqlUser,sqlPassword,sqlDatabase )
+    cursor = db.cursor()
+    cursor.execute("UPDATE users SET twchannel=%s WHERE discord=%s", (twitchChannelURL, ctx.author.id))
+    db.commit()
+    db.close() 
+    await ctx.send("successfully updated your Twitch channel URL")
+    print(ctx.author.name + " updated his twitch channel URL")     
+
 @bot.command(pass_context=True, brief="prints the ping time of the bot")
 async def ping(ctx):#prints the ping and the time the bot needed to process this command
     now = datetime.utcnow()#get the current time
