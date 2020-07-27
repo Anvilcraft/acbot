@@ -2,6 +2,9 @@ from config import *
 import discord
 from discord.ext import commands
 from datetime import datetime
+import pymysql
+from requests import get
+from json import loads
 
 bot = commands.Bot(command_prefix=prefix)
 
@@ -11,6 +14,64 @@ async def on_ready():
     print(bot.user.name)
     print(bot.user.id)
     print('------')
+
+@bot.event
+async def on_member_update(before, after):
+    roles = []
+    for role in after.roles: #get the name of all roles except @everyone
+        if(role.name != "@everyone"):
+            roles.append(role.name)
+
+    for role in ignoreRoles: #check if the user has one of the ignore roles, if yes stop here
+        if role in roles:
+            return
+    
+    rolesString = ""
+    for role in roles:#try to find the name for the role in the role map and convert it. After that add it to roleString
+        try:
+            rolesString = rolesString + roleMap[role] + ","
+        except:
+            pass
+    rolesString = rolesString[:-1] #remove the "," at the end
+    db = pymysql.connect(sqlServer,sqlUser,sqlPassword,sqlDatabase )
+    cursor = db.cursor()
+    cursor.execute("SELECT * FROM users WHERE discord=%s", (after.id))
+    if(len(cursor.fetchall()) == 0):
+        cursor.execute("INSERT INTO users (discord, roles) VALUES (%s, %s)", (after.id, rolesString))
+    else:
+        cursor.execute("UPDATE users SET roles=%s WHERE discord=%s", (rolesString, after.id))
+    db.commit()
+    db.close() 
+    print("updated profile for " + after.name)
+
+@bot.event
+async def on_member_join(member):
+    r = get("https://data.tilera.xyz/api/acapi/discord.php?id=" + str(member.id))
+    response = loads(r.text)
+    try:
+        ytchannel = response["ytchannel"]
+    except:
+        pass
+    try:
+        twchannel = response["twchannel"]
+    except:
+        pass
+
+    db = pymysql.connect(sqlServer,sqlUser,sqlPassword,sqlDatabase )
+    cursor = db.cursor()
+    cursor.execute("INSERT INTO users (discord, ytchannel, twchannel) VALUES (%s, %s, %s)", (member.id, ytchannel, twchannel))
+    db.commit()
+    db.close() 
+    print(member.name + " joined the Server")
+
+@bot.event
+async def on_member_remove(member):
+    db = pymysql.connect(sqlServer,sqlUser,sqlPassword,sqlDatabase )
+    cursor = db.cursor()
+    cursor.execute("DELETE FROM users WHERE discord=%s", (member.id))
+    db.commit()
+    db.close()  
+    print(member.name + " left the server")
 
 @bot.command(pass_context=True, brief="prints the ping time of the bot")
 async def ping(ctx):#prints the ping and the time the bot needed to process this command
