@@ -120,6 +120,39 @@ async def twitch(ctx, twitchChannelURL):
     await ctx.send("successfully updated your Twitch channel URL")
     print(ctx.author.name + " updated his twitch channel URL")     
 
+@bot.command(pass_context=True, brief="updates the roles in the database of a user")
+async def update(ctx, user : discord.Member = None):
+    if (user == None): #check if the message author submitted a different user to check, if not use the message author
+        user = ctx.message.author
+
+    roles = []
+    for role in user.roles: #get the name of all roles except @everyone
+        if(role.name != "@everyone"):
+            roles.append(role.name)
+
+    for role in ignoreRoles: #check if the user has one of the ignore roles, if yes stop here
+        if role in roles:
+            return
+    
+    rolesString = ""
+    for role in roles:#try to find the name for the role in the role map and convert it. After that add it to roleString
+        try:
+            rolesString = rolesString + roleMap[role] + ","
+        except:
+            pass
+    rolesString = rolesString[:-1] #remove the "," at the end
+    db = pymysql.connect(sqlServer,sqlUser,sqlPassword,sqlDatabase )
+    cursor = db.cursor()
+    cursor.execute("SELECT * FROM users WHERE discord=%s", (user.id))
+    if(len(cursor.fetchall()) == 0):
+        cursor.execute("INSERT INTO users (discord, roles) VALUES (%s, %s)", (user.id, rolesString))
+    else:
+        cursor.execute("UPDATE users SET roles=%s WHERE discord=%s", (rolesString, user.id))
+    db.commit()
+    db.close() 
+    await ctx.send("profile for user " + user.name + " updated")
+    print("updated profile for " + user.name)
+
 @bot.command(pass_context=True, brief="prints the ping time of the bot")
 async def ping(ctx):#prints the ping and the time the bot needed to process this command
     now = datetime.utcnow()#get the current time
